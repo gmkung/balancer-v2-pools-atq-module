@@ -27,7 +27,6 @@ const SUBGRAPH_URLS: Record<string, string> = {
     "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest",
 };
 
-//TO BE REPLACED with @kleros/atg-types imports
 // Updated Pool interface to match the new query structure
 interface Pool {
   address: string; // Changed from 'id' to 'address'
