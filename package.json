@@ -2,11 +2,12 @@
   "name": "sample-submodule",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "author": "gmkung <guangmian@gmail.com>",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/tests/unittest.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
