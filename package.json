@@ -4,6 +4,10 @@
   "main": "index.js",
   "author": "gmkung <guangmian@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
   "devDependencies": {
     "@types/node": "^20.11.30",
     "@types/node-fetch": "^2.6.11",
