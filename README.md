@@ -1,6 +1,6 @@
 # Address Tags Query Submodule
 
-This repository contains a TypeScript-based submodule for the Address Tags Query registry. The submodule allows for querying and returning formatted data for various blockchain addresses and their associated metadata tags.
+This repository contains a sample TypeScript-based submodule for the Address Tags Query registry. The submodule allows for querying and returning formatted data for various blockchain addresses and their associated metadata tags.
 
 ## Prerequisites
 
@@ -12,9 +12,9 @@ This repository contains a TypeScript-based submodule for the Address Tags Query
 To set up the submodule for development, follow these steps:
 
 1. Clone the repository:
-   ````
-   git clone https://github.com/gmkung/atq-sample-submodule```
-   ````
+   ```
+   git clone https://github.com/gmkung/atq-sample-submodule
+   ```
 2. Navigate into the repository directory:
 
 `cd your-submodule-repo`
