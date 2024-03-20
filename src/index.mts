@@ -1,5 +1,6 @@
 // Use dynamic import for node-fetch
 import fetch from "node-fetch";
+import { Tag } from "atq-types";
 
 const SUBGRAPH_URLS: Record<string, string> = {
   // Ethereum Mainnet
@@ -35,14 +36,6 @@ interface Pool {
     symbol: string;
     name: string;
   }[];
-}
-
-interface Tag {
-  "Contract Address": string;
-  "Public Name Tag": string;
-  "Project Name": string;
-  "UI/Website Link": string;
-  "Public Note": string;
 }
 
 // Updated to reflect the correct response structure based on the query
