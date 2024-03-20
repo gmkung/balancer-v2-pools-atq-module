@@ -1,15 +1,6 @@
 import { returnTags } from "../src/index.mjs"; // Update the path as needed
 import { writeFile } from "fs/promises";
-
-// Define the Tag type (adjust fields as necessary)
-//TO BE REPLACED with a @kleros/atg-types import
-interface Tag {
-  "Contract Address": string;
-  "Public Name Tag": string;
-  "Project Name": string;
-  "UI/Website Link": string;
-  "Public Note": string;
-}
+import { Tag } from "atq-types";
 
 // Function to convert an array of Tag objects to a CSV string
 function jsonToCSV(items: Tag[]): string {
