@@ -81,9 +81,7 @@ async function returnTags(
   // Use the chainId to get the correct Subgraph URL from the mapping
   const subgraphUrl = SUBGRAPH_URLS[chainId];
   if (!subgraphUrl) {
-    throw new Error(
-      `Unsupported Chain ID: ${chainId}. No matching Subgraph URL found.`
-    );
+    throw new Error(`Unsupported Chain ID: ${chainId}.`);
   }
 
   // Then, use `subgraphUrl` in your fetch call
