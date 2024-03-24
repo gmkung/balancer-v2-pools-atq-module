@@ -1,7 +1,7 @@
 {
   "name": "atq-sample-submodule",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "main.js",
   "type": "module",
   "author": "gmkung <guangmian@gmail.com>",
   "license": "MIT",
