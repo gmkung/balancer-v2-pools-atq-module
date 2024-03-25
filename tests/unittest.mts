@@ -1,4 +1,4 @@
-import { returnTags } from "../src/index.mjs"; // Update the path as needed
+import { returnTags } from "../src/main.mjs"; // Update the path as needed
 import { writeFile } from "fs/promises";
 import { Tag } from "atq-types";
 
