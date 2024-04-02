@@ -1,6 +1,6 @@
 // Use dynamic import for node-fetch
 import fetch from "node-fetch";
-import { Tag } from "atq-types";
+import { Tag, ITagService } from "atq-types";
 
 const SUBGRAPH_URLS: Record<string, string> = {
   // Ethereum Mainnet
@@ -62,55 +62,57 @@ const GET_POOLS_QUERY = `
   }
 `;
 
-async function returnTags(
-  chainId: string,
-  apiKey: string
-): Promise<Tag[] | Error> {
-  let lastTimestamp: number = 0;
-  let allTags: Tag[] = [];
-  let isMore = true;
+class TagService implements ITagService {
+  // Using an arrow function for returnTags
+  returnTags = async (chainId: string, apiKey: string): Promise<Tag[]> => {
+    let lastTimestamp: number = 0;
+    let allTags: Tag[] = [];
+    let isMore = true;
 
-  // Use the chainId to get the correct Subgraph URL from the mapping
-  const subgraphUrl = SUBGRAPH_URLS[chainId];
-  if (!subgraphUrl) {
-    throw new Error(`Unsupported Chain ID: ${chainId}.`);
-  }
-
-  // Then, use `subgraphUrl` in your fetch call
-  while (isMore) {
-    const response = await fetch(subgraphUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${apiKey}`, // Assuming the API key is needed for all requests
-      },
-      body: JSON.stringify({
-        query: GET_POOLS_QUERY,
-        variables: { lastTimestamp: lastTimestamp },
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.statusText}`);
+    const subgraphUrl = SUBGRAPH_URLS[chainId];
+    if (!subgraphUrl) {
+      throw new Error(`Unsupported Chain ID: ${chainId}.`);
     }
-    const result = (await response.json()) as GraphQLResponse;
-    const pools: Pool[] = result.data.pools;
 
-    allTags.push(...transformPoolsToTags(chainId, pools));
+    while (isMore) {
+      const response = await fetch(subgraphUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          query: GET_POOLS_QUERY,
+          variables: { lastTimestamp },
+        }),
+      });
 
-    if (pools.length < 1000) {
-      isMore = false;
-    } else {
-      // Assuming 'createTime' is now a property on the returned pools, which needs verification
-      lastTimestamp = parseInt(pools[pools.length - 1].createTime.toString());
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      const result = (await response.json()) as GraphQLResponse;
+      const pools: Pool[] = result.data.pools;
+
+      allTags.push(...transformPoolsToTags(chainId, pools));
+
+      isMore = pools.length === 1000;
+      if (isMore) {
+        lastTimestamp = parseInt(pools[pools.length - 1].createTime.toString());
+      }
     }
-  }
 
-  return allTags;
+    return allTags;
+  };
 }
 
-// Adjusted transformation function to match the updated Pool interface
+// Creating an instance of TagService
+const tagService = new TagService();
+
+// Exporting the returnTags method directly
+export const returnTags = tagService.returnTags;
+
+// Local helper function used by returnTags
 function transformPoolsToTags(chainId: string, pools: Pool[]): Tag[] {
   return pools.map((pool) => ({
     "Contract Address": `eip155:${chainId}:${pool.address}`,
@@ -122,5 +124,3 @@ function transformPoolsToTags(chainId: string, pools: Pool[]): Tag[] {
       .join(", ")}.`,
   }));
 }
-
-export { returnTags };

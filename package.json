@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/tests/unittest.mjs"
+    "test": "node dist/tests/unittest.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
@@ -15,7 +15,7 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "atq-types": "1.0.7",
+    "atq-types": "1.1.0",
     "axios": "^1.6.8",
     "node-fetch": "^3.3.2"
   }
