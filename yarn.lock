@@ -22,10 +22,10 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
   integrity sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==
 
-atq-types@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/atq-types/-/atq-types-1.1.0.tgz#9413d23fbf7b0e7aefbbc64b038ab12548f9d986"
-  integrity sha512-KVHZd+9p3dqlF7tSiMciFeEz/pGN473TKHFWGMRJDwokws9YtBTF6AJisLba2H8Ua0SFX4ZVwpYUMWzPISsGEg==
+atq-types@1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/atq-types/-/atq-types-1.1.4.tgz#486d75dadacadaa0f230e3554a417c81321e0554"
+  integrity sha512-14eglLWsdL3NhZ0XR07h8FnI3qTHz4tNA1p+dqGL/3b0psLU7YFrWJttJHwA1W0D2hMQ0ZI4rLyPZz7Ob7803w==
 
 axios@^1.6.8:
   version "1.6.8"

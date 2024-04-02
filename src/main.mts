@@ -1,8 +1,8 @@
 // Use dynamic import for node-fetch
 import fetch from "node-fetch";
-import { Tag, ITagService } from "atq-types";
+import { ContractTag, ITagService } from "atq-types";
 
-const SUBGRAPH_URLS: Record<string, string> = {
+const SUBGRAPH_URLS_HOSTED: Record<string, string> = {
   // Ethereum Mainnet
   "1": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2",
   // Polygon (MATIC)
@@ -64,42 +64,55 @@ const GET_POOLS_QUERY = `
 
 class TagService implements ITagService {
   // Using an arrow function for returnTags
-  returnTags = async (chainId: string, apiKey: string): Promise<Tag[]> => {
+  returnTags = async (
+    chainId: string,
+    apiKey: string | null
+  ): Promise<ContractTag[]> => {
     let lastTimestamp: number = 0;
-    let allTags: Tag[] = [];
+    let allTags: ContractTag[] = [];
     let isMore = true;
 
-    const subgraphUrl = SUBGRAPH_URLS[chainId];
-    if (!subgraphUrl) {
-      throw new Error(`Unsupported Chain ID: ${chainId}.`);
-    }
-
-    while (isMore) {
-      const response = await fetch(subgraphUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          query: GET_POOLS_QUERY,
-          variables: { lastTimestamp },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
+    if (apiKey === null) {
+      const subgraphUrl = SUBGRAPH_URLS_HOSTED[chainId];
+      if (!subgraphUrl) {
+        throw new Error(`Unsupported Chain ID: ${chainId}.`);
       }
-      const result = (await response.json()) as GraphQLResponse;
-      const pools: Pool[] = result.data.pools;
 
-      allTags.push(...transformPoolsToTags(chainId, pools));
+      while (isMore) {
+        const response = await fetch(subgraphUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            query: GET_POOLS_QUERY,
+            variables: { lastTimestamp },
+          }),
+        });
 
-      isMore = pools.length === 1000;
-      if (isMore) {
-        lastTimestamp = parseInt(pools[pools.length - 1].createTime.toString());
+        if (!response.ok) {
+          throw new Error(
+            `Network response was not ok: ${response.statusText}`
+          );
+        }
+        const result = (await response.json()) as GraphQLResponse;
+        const pools: Pool[] = result.data.pools;
+
+        allTags.push(...transformPoolsToTags(chainId, pools));
+
+        isMore = pools.length === 1000;
+        if (isMore) {
+          lastTimestamp = parseInt(
+            pools[pools.length - 1].createTime.toString()
+          );
+        }
       }
+    } else {
+      throw new Error(
+        "Queries to the decentralized Graph Network are not supported."
+      );
     }
 
     return allTags;
@@ -113,7 +126,7 @@ const tagService = new TagService();
 export const returnTags = tagService.returnTags;
 
 // Local helper function used by returnTags
-function transformPoolsToTags(chainId: string, pools: Pool[]): Tag[] {
+function transformPoolsToTags(chainId: string, pools: Pool[]): ContractTag[] {
   return pools.map((pool) => ({
     "Contract Address": `eip155:${chainId}:${pool.address}`,
     "Public Name Tag": `${pool.tokens.map((t) => t.symbol).join("/")} Pool`,

@@ -1,11 +1,11 @@
 import { returnTags } from "../src/main.mjs"; // Update the path as needed
 import { writeFile } from "fs/promises";
-import { Tag } from "atq-types";
+import { ContractTag } from "atq-types";
 
 // Function to convert an array of Tag objects to a CSV string
-function jsonToCSV(items: Tag[]): string {
+function jsonToCSV(items: ContractTag[]): string {
   const replacer = (key: string, value: any) => (value === null ? "" : value);
-  const header = Object.keys(items[0]) as Array<keyof Tag>; // Cast the keys to an array of Tag's keys
+  const header = Object.keys(items[0]) as Array<keyof ContractTag>; // Cast the keys to an array of Tag's keys
   const csv = [
     header.join(","), // header row first
     ...items.map((row) =>
@@ -19,7 +19,7 @@ function jsonToCSV(items: Tag[]): string {
 }
 async function test(): Promise<void> {
   try {
-    const tags = await returnTags("1", "A20CharacterApiKeyThatWorks");
+    const tags = await returnTags("1", null);
 
     if (tags instanceof Error) {
       // Handle error
