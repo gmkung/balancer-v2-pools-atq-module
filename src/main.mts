@@ -74,18 +74,25 @@ class TagService implements ITagService {
 
     if (apiKey === null) {
       const subgraphUrl = SUBGRAPH_URLS_HOSTED[chainId];
-      if (!subgraphUrl) {
-        throw new Error(`Unsupported Chain ID: ${chainId}.`);
+      if (!subgraphUrl || isNaN(Number(chainId))) {
+        throw new Error(
+          `Unsupported or invalid Chain ID provided: ${chainId}.`
+        );
       }
 
       while (isMore) {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        };
+
+        if (apiKey) {
+          headers["Authorization"] = `Bearer ${apiKey}`;
+        }
+
         const response = await fetch(subgraphUrl, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
+          headers,
           body: JSON.stringify({
             query: GET_POOLS_QUERY,
             variables: { lastTimestamp },
@@ -94,7 +101,7 @@ class TagService implements ITagService {
 
         if (!response.ok) {
           throw new Error(
-            `Network response was not ok: ${response.statusText}`
+            `Failed to fetch data from ${subgraphUrl}: ${response.status} ${response.statusText}`
           );
         }
         const result = (await response.json()) as GraphQLResponse;
