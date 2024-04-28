@@ -2,57 +2,11 @@
 import fetch from "node-fetch";
 import { ContractTag, ITagService } from "atq-types";
 
-const SUBGRAPH_URLS: Record<
-  string,
-  { hosted: string; decentralized: string | null }
-> = {
+const SUBGRAPH_URLS: Record<string, { decentralized: string }> = {
   // Ethereum Mainnet
   "1": {
-    hosted: "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2",
     decentralized:
-      "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/GAWNgiGrA9eRce5gha9tWc7q5DPvN3fs5rSJ6tEULFNM",
-  },
-  // Polygon (MATIC)
-  "137": {
-    hosted:
-      "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
-    decentralized: null, // Assuming decentralized URL is not available for this chain
-  },
-  // Arbitrum
-  "42161": {
-    hosted:
-      "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2",
-    decentralized: null, // Assuming decentralized URL is not available for this chain
-  },
-  // Optimism
-  "10": {
-    hosted:
-      "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-optimism-v2",
-    decentralized: null,
-  },
-  // Gnosis Chain (formerly xDai)
-  "100": {
-    hosted:
-      "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2",
-    decentralized: null, // Assuming decentralized URL is not available for this chain
-  },
-  // Avalanche
-  "43114": {
-    hosted:
-      "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2",
-    decentralized: null,
-  },
-  // Polygon zkEVM
-  "1101": {
-    hosted:
-      "https://api.studio.thegraph.com/query/24660/balancer-polygon-zk-v2/version/latest",
-    decentralized: null, // Assuming decentralized URL is not available for this chain
-  },
-  // Base
-  "84532": {
-    hosted:
-      "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest",
-    decentralized: null, // Assuming decentralized URL is not available for this chain
+      "https://gateway.thegraph.com/api/[api-key]/deployments/id/QmRTqz2UUmUfa2ug6zLpACypP2Xv5QZRoEF2RgurED7gnZ",
   },
 };
 
@@ -143,14 +97,12 @@ async function fetchData(
   return result.data.pools;
 }
 
-function prepareUrl(chainId: string, apiKey: string | null): string {
+function prepareUrl(chainId: string, apiKey: string): string {
   const urls = SUBGRAPH_URLS[chainId];
   if (!urls || isNaN(Number(chainId))) {
     throw new Error(`Unsupported or invalid Chain ID provided: ${chainId}.`);
   }
-  return apiKey && urls.decentralized
-    ? urls.decentralized.replace("[api-key]", encodeURIComponent(apiKey))
-    : urls.hosted;
+  return urls.decentralized.replace("[api-key]", encodeURIComponent(apiKey));
 }
 
 function truncateString(text: string, maxLength: number) {
@@ -183,7 +135,7 @@ class TagService implements ITagService {
   // Using an arrow function for returnTags
   returnTags = async (
     chainId: string,
-    apiKey: string | null
+    apiKey: string
   ): Promise<ContractTag[]> => {
     let lastTimestamp: number = 0;
     let allTags: ContractTag[] = [];
@@ -206,12 +158,13 @@ class TagService implements ITagService {
       } catch (error) {
         if (isError(error)) {
           console.error(`An error occurred: ${error.message}`);
+          throw new Error(`Failed fetching data: ${error.message}`); // Propagate a new error with more context
         } else {
           console.error("An unknown error occurred.");
+          throw new Error("An unknown error occurred during fetch operation."); // Throw with a generic error message if the error type is unknown
         }
       }
     }
-
     return allTags;
   };
 }

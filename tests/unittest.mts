@@ -19,7 +19,7 @@ function jsonToCSV(items: ContractTag[]): string {
 }
 async function test(): Promise<void> {
   try {
-    const tags = await returnTags("1", null);
+    const tags = await returnTags("1", "227c7e32b916a4f0736a7f293d16eeb5");
 
     if (tags instanceof Error) {
       // Handle error
