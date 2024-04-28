@@ -1,4 +1,3 @@
-// Use dynamic import for node-fetch
 import fetch from "node-fetch";
 import { ContractTag, ITagService } from "atq-types";
 
@@ -6,11 +5,9 @@ const SUBGRAPH_URLS: Record<string, { decentralized: string }> = {
   // Ethereum Mainnet
   "1": {
     decentralized:
-      "https://gateway.thegraph.com/api/[api-key]/deployments/id/QmRTqz2UUmUfa2ug6zLpACypP2Xv5QZRoEF2RgurED7gnZ",
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmYayB5NBkDuGmgJNz1B9kH3ySYfA1iLBz8X8Jv8qcobSQ",
   },
 };
-
-// Updated Pool interface to match the new query structure
 
 interface PoolToken {
   symbol: string;
@@ -18,12 +15,11 @@ interface PoolToken {
 }
 
 interface Pool {
-  address: string; // Changed from 'id' to 'address'
+  address: string;
   createTime: number;
   tokens: PoolToken[];
 }
 
-// Updated to reflect the correct response structure based on the query
 interface GraphQLData {
   pools: Pool[];
 }
@@ -141,7 +137,7 @@ class TagService implements ITagService {
     let allTags: ContractTag[] = [];
     let isMore = true;
 
-    const url = prepareUrl(chainId, apiKey); // Ensure you have a function to get the right URL
+    const url = prepareUrl(chainId, apiKey);
 
     while (isMore) {
       try {
