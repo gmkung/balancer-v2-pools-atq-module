@@ -96,7 +96,11 @@ async function fetchData(
 function prepareUrl(chainId: string, apiKey: string): string {
   const urls = SUBGRAPH_URLS[chainId];
   if (!urls || isNaN(Number(chainId))) {
-    throw new Error(`Unsupported or invalid Chain ID provided: ${chainId}.`);
+    const supportedChainIds = Object.keys(SUBGRAPH_URLS).join(", ");
+
+    throw new Error(
+      `Unsupported or invalid Chain ID provided: ${chainId}. Only the following values are accepted: ${supportedChainIds}`
+    );
   }
   return urls.decentralized.replace("[api-key]", encodeURIComponent(apiKey));
 }
