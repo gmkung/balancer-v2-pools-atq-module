@@ -2,27 +2,33 @@ import fetch from "node-fetch";
 import { ContractTag, ITagService } from "atq-types";
 
 const SUBGRAPH_URLS: Record<string, { decentralized: string }> = {
+  //All endpoints below can be found by the network logs when browsing on https://app.balancer.fi and toggling through the different chains
   // Ethereum Mainnet
   "1": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmQ5TT2yYBZgoUxsat3bKmNe5Fr9LW9YAtDs8aeuc1BRhj",
   },
+  //Optimism
   "10": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmWUgkiUM5c3BW1Z51DUkZfnyQfyfesE8p3BRnEtA9vyPL",
   },
+  //Gnosis
   "100": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBvRxXZbusTtbLUPRreeo1GDigfEYPioYVeWZqHRMZpV",
   },
+  //Polygon
   "137": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmPsV39ZhPFCe4WjyQHCyPXkzWxVboeSDmrayz2b9ghSDy",
   },
+  //Arbitrum
   "42161": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmPbjY6L1NhPjpBv7wDTfG9EPx5FpCuBqeg1XxByzBTLcs",
   },
+  //Avalanche C-Chain
   "43114": {
     decentralized:
       "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmeJY1ZjmuJVPvmVghZSuiSxEx2a9kmpKnjr4Qw5hNdpLU",

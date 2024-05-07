@@ -1,6 +1,6 @@
 {
-  "name": "atq-sample-submodule",
-  "version": "1.0.0",
+  "name": "balancer-v2-pools-atq-module",
+  "version": "1.0.1",
   "main": "main.mjs",
   "type": "module",
   "author": "gmkung <guangmian@gmail.com>",
