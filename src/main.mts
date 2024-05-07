@@ -5,7 +5,27 @@ const SUBGRAPH_URLS: Record<string, { decentralized: string }> = {
   // Ethereum Mainnet
   "1": {
     decentralized:
-      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmYayB5NBkDuGmgJNz1B9kH3ySYfA1iLBz8X8Jv8qcobSQ",
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmQ5TT2yYBZgoUxsat3bKmNe5Fr9LW9YAtDs8aeuc1BRhj",
+  },
+  "10": {
+    decentralized:
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmWUgkiUM5c3BW1Z51DUkZfnyQfyfesE8p3BRnEtA9vyPL",
+  },
+  "100": {
+    decentralized:
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmSBvRxXZbusTtbLUPRreeo1GDigfEYPioYVeWZqHRMZpV",
+  },
+  "137": {
+    decentralized:
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmPsV39ZhPFCe4WjyQHCyPXkzWxVboeSDmrayz2b9ghSDy",
+  },
+  "42161": {
+    decentralized:
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmPbjY6L1NhPjpBv7wDTfG9EPx5FpCuBqeg1XxByzBTLcs",
+  },
+  "43114": {
+    decentralized:
+      "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmeJY1ZjmuJVPvmVghZSuiSxEx2a9kmpKnjr4Qw5hNdpLU",
   },
 };
 
@@ -16,7 +36,9 @@ interface PoolToken {
 
 interface Pool {
   address: string;
+  symbol: string;
   createTime: number;
+  poolType: string;
   tokens: PoolToken[];
 }
 
@@ -43,7 +65,9 @@ const GET_POOLS_QUERY = `
       where: { createTime_gt: $lastTimestamp }
     ) {
       address
+      symbol
       createTime
+      poolType
       tokens {
         symbol
         name  
@@ -61,6 +85,11 @@ function isError(e: unknown): e is Error {
   );
 }
 
+const camelCaseToSpaced = (input: string): string => {
+  // This regular expression finds all occurrences where a lowercase letter or a number is directly followed by an uppercase letter and inserts a space between them.
+  return input.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+};
+
 async function fetchData(
   subgraphUrl: string,
   lastTimestamp: number
@@ -73,7 +102,6 @@ async function fetchData(
       variables: { lastTimestamp },
     }),
   });
-
   if (!response.ok) {
     throw new Error(`HTTP error: ${response.status}`);
   }
@@ -85,11 +113,9 @@ async function fetchData(
     });
     throw new Error("GraphQL errors occurred: see logs for details.");
   }
-
   if (!result.data || !result.data.pools) {
     throw new Error("No pools data found.");
   }
-
   return result.data.pools;
 }
 
@@ -111,20 +137,50 @@ function truncateString(text: string, maxLength: number) {
   }
   return text;
 }
+function containsHtmlOrMarkdown(text: string): boolean {
+  // Enhanced HTML tag detection that requires at least one character inside the brackets
+  if (/<[^>]+>/.test(text)) {
+    return true;
+  }
+  return false;
+}
 
 // Local helper function used by returnTags
 function transformPoolsToTags(chainId: string, pools: Pool[]): ContractTag[] {
-  return pools.map((pool) => {
+  const validPools: Pool[] = [];
+
+  pools.forEach((pool) => {
+    const poolTypeInvalid = containsHtmlOrMarkdown(pool.poolType);
+    const poolSymbolInvalid = containsHtmlOrMarkdown(pool.symbol);
+    const invalidTokenName = pool.tokens.some(
+      (token) =>
+        containsHtmlOrMarkdown(token.symbol) ||
+        containsHtmlOrMarkdown(token.name)
+    );
+
+    if (poolTypeInvalid || poolSymbolInvalid || invalidTokenName) {
+      console.log(
+        "Pool rejected due to HTML content in pool name/symbol: " +
+          JSON.stringify(pool)
+      );
+    } else {
+      validPools.push(pool);
+    }
+  });
+
+  return validPools.map((pool) => {
     const maxSymbolsLength = 45;
-    const symbolsText = pool.tokens.map((t) => t.symbol).join("/");
-    const truncatedSymbolsText = truncateString(symbolsText, maxSymbolsLength);
+    //const symbolsText = pool.tokens.map((t) => t.symbol).join("/");
+    const truncatedSymbolsText = truncateString(pool.symbol, maxSymbolsLength);
     return {
       "Contract Address": `eip155:${chainId}:${pool.address}`,
       "Public Name Tag": `${truncatedSymbolsText} Pool`,
       "Project Name": "Balancer v2",
       "UI/Website Link": "https://balancer.fi",
-      "Public Note": `A Balancer v2 pool with the tokens: ${pool.tokens
-        .map((t) => t.name)
+      "Public Note": `A Balancer v2 '${camelCaseToSpaced(
+        pool.poolType
+      )}' pool with the tokens: ${pool.tokens
+        .map((t) => t.name + " (symbol: " + t.symbol + ")")
         .join(", ")}.`,
     };
   });
@@ -158,7 +214,7 @@ class TagService implements ITagService {
       } catch (error) {
         if (isError(error)) {
           console.error(`An error occurred: ${error.message}`);
-          throw new Error(`Failed fetching data: ${error.message}`); // Propagate a new error with more context
+          throw new Error(`Failed fetching data: ${error}`); // Propagate a new error with more context
         } else {
           console.error("An unknown error occurred.");
           throw new Error("An unknown error occurred during fetch operation."); // Throw with a generic error message if the error type is unknown
