@@ -156,12 +156,16 @@ function transformPoolsToTags(chainId: string, pools: Pool[]): ContractTag[] {
   const validPools: Pool[] = [];
 
   pools.forEach((pool) => {
-    const poolTypeInvalid = containsHtmlOrMarkdown(pool.poolType);
-    const poolSymbolInvalid = containsHtmlOrMarkdown(pool.symbol);
+    const poolTypeInvalid =
+      containsHtmlOrMarkdown(pool.poolType) || !pool.poolType;
+    const poolSymbolInvalid =
+      containsHtmlOrMarkdown(pool.symbol) || !pool.symbol;
     const invalidTokenName = pool.tokens.some(
       (token) =>
         containsHtmlOrMarkdown(token.symbol) ||
-        containsHtmlOrMarkdown(token.name)
+        containsHtmlOrMarkdown(token.name) ||
+        !token.symbol ||
+        !token.name
     );
 
     if (poolTypeInvalid || poolSymbolInvalid || invalidTokenName) {
