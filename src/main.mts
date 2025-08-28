@@ -116,10 +116,8 @@ async function fetchData(
 
   const result = (await response.json()) as GraphQLResponse;
   if (result.errors) {
-    result.errors.forEach((error) => {
-      console.error(`GraphQL error: ${error.message}`);
-    });
-    throw new Error("GraphQL errors occurred: see logs for details.");
+    console.error(`GraphQL query failed with ${result.errors.length} error(s)`);
+    throw new Error("GraphQL query failed - check network connectivity and API key");
   }
   if (!result.data || !result.data.pools) {
     throw new Error("No pools data found.");
@@ -146,11 +144,24 @@ function truncateString(text: string, maxLength: number) {
   return text;
 }
 function containsHtmlOrMarkdown(text: string): boolean {
-  // Enhanced HTML tag detection that requires at least one character inside the brackets
-  if (/<[^>]+>/.test(text)) {
-    return true;
-  }
-  return false;
+  // Enhanced security validation
+  const patterns = [
+    /<[^>]+>/,  // HTML tags
+    /javascript:/i,  // JavaScript protocol
+    /data:/i,  // Data protocol
+    /vbscript:/i,  // VBScript protocol  
+    /on\w+\s*=/i,  // Event handlers (onclick, onload, etc.)
+    /<script/i,  // Script tags
+    /&\w+;/,  // HTML entities
+    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/  // Control characters
+  ];
+  
+  return patterns.some(pattern => pattern.test(text));
+}
+
+function isValidAddress(address: string): boolean {
+  // Ethereum address validation: 42 chars, starts with 0x, hex only
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 // Local helper function used by returnTags
@@ -162,6 +173,7 @@ function transformPoolsToTags(chainId: string, pools: Pool[]): ContractTag[] {
       containsHtmlOrMarkdown(pool.poolType) || !pool.poolType;
     const poolSymbolInvalid =
       containsHtmlOrMarkdown(pool.symbol) || !pool.symbol;
+    const addressInvalid = !isValidAddress(pool.address);
     const invalidTokenName = pool.tokens.some(
       (token) =>
         containsHtmlOrMarkdown(token.symbol) ||
@@ -170,10 +182,9 @@ function transformPoolsToTags(chainId: string, pools: Pool[]): ContractTag[] {
         !token.name
     );
 
-    if (poolTypeInvalid || poolSymbolInvalid || invalidTokenName) {
+    if (poolTypeInvalid || poolSymbolInvalid || addressInvalid || invalidTokenName) {
       console.log(
-        "Pool rejected due to HTML content in pool name/symbol: " +
-          JSON.stringify(pool)
+        `Pool rejected due to invalid content. Pool ID: ${pool.id?.substring(0, 10)}...`
       );
     } else {
       validPools.push(pool);
