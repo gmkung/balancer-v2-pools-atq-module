@@ -41,6 +41,7 @@ interface PoolToken {
 }
 
 interface Pool {
+  id: string;
   address: string;
   symbol: string;
   createTime: number;
@@ -63,13 +64,14 @@ const headers: Record<string, string> = {
 };
 
 const GET_POOLS_QUERY = `
-  query GetPools($lastTimestamp: Int) {
+  query GetPools($lastId: String) {
     pools(
       first: 1000,
-      orderBy: createTime,
+      orderBy: id,
       orderDirection: asc,
-      where: { createTime_gt: $lastTimestamp }
+      where: { id_gt: $lastId }
     ) {
+      id
       address
       symbol
       createTime
@@ -98,14 +100,14 @@ const camelCaseToSpaced = (input: string): string => {
 
 async function fetchData(
   subgraphUrl: string,
-  lastTimestamp: number
+  lastId: string
 ): Promise<Pool[]> {
   const response = await fetch(subgraphUrl, {
     method: "POST",
     headers,
     body: JSON.stringify({
       query: GET_POOLS_QUERY,
-      variables: { lastTimestamp },
+      variables: { lastId },
     }),
   });
   if (!response.ok) {
@@ -203,7 +205,7 @@ class TagService implements ITagService {
     chainId: string,
     apiKey: string
   ): Promise<ContractTag[]> => {
-    let lastTimestamp: number = 0;
+    let lastId: string = "";
     let allTags: ContractTag[] = [];
     let isMore = true;
 
@@ -211,15 +213,12 @@ class TagService implements ITagService {
 
     while (isMore) {
       try {
-        const pools = await fetchData(url, lastTimestamp);
+        const pools = await fetchData(url, lastId);
         allTags.push(...transformPoolsToTags(chainId, pools));
 
         isMore = pools.length === 1000;
         if (isMore) {
-          lastTimestamp = parseInt(
-            pools[pools.length - 1].createTime.toString(),
-            10
-          );
+          lastId = pools[pools.length - 1].id;
         }
       } catch (error) {
         if (isError(error)) {
